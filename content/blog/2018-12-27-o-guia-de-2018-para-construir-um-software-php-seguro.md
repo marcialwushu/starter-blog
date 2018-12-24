@@ -129,10 +129,40 @@ No entanto, embora colocar HTTPS no seu servidor ofereça inúmeros benefícios 
 
 - ```Content-Security-Policy```
   - Você deseja esse cabeçalho porque ele oferece um controle refinado sobre os recursos internos e externos que podem ser carregados pelo navegador, o que fornece uma camada poderosa de defesa contra vulnerabilidades de cross-site scripting.
-- Consulte o [CSP-Builder](https://github.com/paragonie/csp-builder) para obter uma maneira rápida e fácil de implantar / gerenciar políticas de segurança de conteúdo.
+  - Consulte o [CSP-Builder](https://github.com/paragonie/csp-builder) para obter uma maneira rápida e fácil de implantar / gerenciar políticas de segurança de conteúdo.
   - Para uma análise mais aprofundada, esta [introdução aos cabeçalhos da Política de Segurança de Conteúdo](https://scotthelme.co.uk/content-security-policy-an-introduction/) por Scott Helme é um excelente ponto de partida.
 - ```Expect-CT```
   - Você deseja esse cabeçalho porque ele adiciona uma camada de proteção às autoridades de certificação desonestos / comprometidas, forçando os agentes mal-intencionados a publicar evidências de seus certificados emitidos incorretamente em uma estrutura de dados somente de anexo e verificável publicamente. [Saiba mais sobre ```Expect-CT```](https://scotthelme.co.uk/a-new-security-header-expect-ct/).
   - Defina-a ```enforce,max-age=30``` inicialmente e aumente à ```max-age``` medida que você ganha mais confiança de que esse cabeçalho não causará interrupções no serviço.
-  
+- ```Referrer-Policy```
+  - Você quer este cabeçalho porque permite controlar se você vaza ou não informações sobre o comportamento de seus usuários para terceiros.
+  - Mais uma vez, [Scott Helme oferece um excelente mergulho profundo em ```Referrer-Policy```](https://scotthelme.co.uk/a-new-security-header-referrer-policy/) cabeçalhos.
+  - Defina para ```same-origin``` ou a ```no-referrer``` menos que você tenha um motivo para permitir uma configuração mais permissiva  
+- ```Strict-Transport-Security```
+  - Você deseja esse cabeçalho porque informa aos navegadores para forçar todas as solicitações futuras para a mesma origem por HTTPS, em vez de HTTP inseguro.
+  - Defina-o ```max-age=30``` quando estiver implantando pela primeira vez e, em seguida, aumente esse valor para algum valor grande (por exemplo ```31536000```) quando tiver certeza de que nada será quebrado.
+- ```X-Content-Type-Options```
+  - Você deseja este cabeçalho porque a confusão do tipo MIME pode levar a resultados imprevisíveis, incluindo casos de borda estranhos que permitem vulnerabilidades XSS. Isto é melhor acompanhado por um ```Content-Type``` de cabeçalho padrão.
+  - Defina para a ```nosniff``` menos que você precise do comportamento padrão (por exemplo, para um download de arquivo).
+- ```X-Frame-Options```
+  - Você quer este cabeçalho porque permite que você evite o **clickjacking**.
+  - Defina como ```DENY```(ou ```SAMEORIGIN```, mas somente se você usar ```<frame>``` elementos).
+- ```X-XSS-Protection```
+- Você deseja este cabeçalho porque habilita alguns recursos anti-XSS do navegador que não estão habilitados por padrão.
+- Definido como ```1; mode=block```
+
+De forma semelhante, se você estiver usando os recursos de gerenciamento de sessão integrados do PHP (que são recomendados), provavelmente desejará chamar ```session_start()``` assim:
+
+```php
+session_start([
+    'cookie_httponly' => true,
+    'cookie_secure' => true
+]);
+
+```
+
+Isso força o seu aplicativo a usar os flags HTTP-Only e Secure ao enviar o cookie do identificador de sessão, o que impede que um ataque XSS bem sucedido roube os cookies dos usuários e os força a serem enviados apenas por HTTPS, respectivamente. Anteriormente, cobrimos [sessões seguras de PHP](https://paragonie.com/blog/2015/04/fast-track-safe-and-secure-php-sessions) em um post de 2015.
+
+
+
 
